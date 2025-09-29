@@ -25,6 +25,10 @@ def load_random_problem(filename='problems.json'):
     """Load a random problem from the JSON file."""
     with open(filename, 'r') as f:
         data = json.load(f)
+    # Filter out empty problem lists
+    data = [p for p in data if p and len(p) > 0]
+    if not data:
+        raise ValueError("No valid problems found in JSON file")
     problem_list = random.choice(data)
     problem = problem_list[0]
     return problem['id'], problem['code']
@@ -61,8 +65,8 @@ def display_text_with_cursor(target_text, typed_text, current_pos):
         for char_idx, char in enumerate(line):
             abs_pos = char_count + char_idx
 
-            # Convert tabs to 4 spaces for display
-            display_char = '    ' if char == '\t' else char
+            # Convert tabs to 8 spaces for display
+            display_char = '        ' if char == '\t' else char
 
             if abs_pos < len(typed_text):
                 if typed_text[abs_pos] == char:
@@ -70,10 +74,19 @@ def display_text_with_cursor(target_text, typed_text, current_pos):
                 else:
                     output += f"{Colors.RED}{display_char}{Colors.RESET}"
             elif abs_pos == current_pos:
-                # Highlight current character in tan-orange
-                output += f"{Colors.ORANGE}{Colors.BOLD}{display_char}{Colors.RESET}"
+                # Highlight current character cell with background
+                if char == ' ':
+                    # For spaces, show highlighted block
+                    output += f"\033[48;2;222;157;105m \033[0m"
+                else:
+                    output += f"\033[48;2;222;157;105m{Colors.BOLD}{display_char}\033[0m"
             else:
                 output += f"{Colors.DIM}{display_char}{Colors.RESET}"
+
+        # If cursor is at end of line (past all characters), show highlighted block
+        end_of_line_pos = char_count + len(line)
+        if current_pos == end_of_line_pos and line_idx < len(lines) - 1:
+            output += f"\033[48;2;222;157;105m \033[0m"
 
         print(output)
         char_count += len(line)
@@ -83,7 +96,7 @@ def display_text_with_cursor(target_text, typed_text, current_pos):
             if char_count < len(typed_text):
                 print()  # Typed past this line
             elif char_count == current_pos:
-                print(f"{Colors.ORANGE}{Colors.BOLD}↵{Colors.RESET}")  # Highlight newline in orange
+                print(f"\033[48;2;222;157;105m{Colors.BOLD}↵\033[0m")  # Highlight newline with background
             else:
                 print()  # Haven't reached this line yet
             char_count += 1
@@ -164,6 +177,9 @@ def main():
                 if typed_text:
                     typed_text = typed_text[:-1]
                     current_pos = max(0, current_pos - 1)
+            elif char == '\t':  # Tab key
+                typed_text += '  '  # Insert 2 spaces
+                current_pos += 2
             else:
                 typed_text += char
                 current_pos += 1
