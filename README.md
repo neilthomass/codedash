@@ -1,5 +1,3 @@
-# DevDash
-
 A terminal-based typing speed test for python developers.
 
 ## Usage

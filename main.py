@@ -164,7 +164,7 @@ def calculate_metrics(target_text, typed_text, elapsed_time, all_typed_chars, wr
     minutes = elapsed_time / 60
     # WPM: ((ALL TYPED CHARS / 5) - wrong typed chars) / Time in minutes
     accuracy = (correct_chars / all_typed_chars * 100) if all_typed_chars > 0 else 0
-    wpm = ((all_typed_chars - wrong_typed_chars) / 5) / minutes * accuracy if minutes > 0 else 0
+    wpm = ((all_typed_chars - wrong_typed_chars) / 5) / minutes * accuracy / 100 if minutes > 0 else 0
 
     return {
         'total_chars': total_chars,
@@ -226,7 +226,7 @@ def main():
 
             char = get_char()
 
-            # Start timer on first key press
+            # Start timer on first keypress
             if start_time is None:
                 start_time = time.time()
 
