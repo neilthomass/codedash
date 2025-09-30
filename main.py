@@ -5,7 +5,7 @@ import sys
 import tty
 import termios
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 from collections import defaultdict
 
 # ANSI color codes - using standard codes for compatibility
@@ -199,7 +199,85 @@ def display_results(metrics, missed_chars):
             display_char = repr(char) if char in ('\n', '\t', ' ') else char
             print(f"{Colors.WHITE}  {Colors.RED}{display_char}: {count}")
 
-    print(f"{Colors.ORANGE}{'='*80}")
+
+def save_to_data_file(metrics):
+    """Save metrics to data.txt file."""
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open('data.txt', 'a') as f:
+        f.write(f"{timestamp},{metrics['wpm']:.2f},{metrics['accuracy']:.2f},{metrics['time']:.2f}\n")
+
+def plot_terminal(data_file='data.txt'):
+    """Plot WPM and accuracy vs time in the terminal."""
+    try:
+        with open(data_file, 'r') as f:
+            lines = f.readlines()
+
+        if not lines:
+            print(f"{Colors.YELLOW}No data to plot yet.")
+            return
+
+        # Parse data
+        wpms = []
+        accuracies = []
+        for line in lines:
+            parts = line.strip().split(',')
+            if len(parts) >= 3:
+                wpms.append(float(parts[1]))
+                accuracies.append(float(parts[2]))
+
+        if not wpms:
+            print(f"{Colors.YELLOW}No valid data to plot.")
+            return
+
+        # Terminal plot dimensions
+        plot_width = 30
+        plot_height = 15
+
+        # Normalize data for plotting
+        max_wpm = max(wpms) if wpms else 1
+        max_accuracy = 100  # Accuracy is always 0-100
+
+        print(f"\n{Colors.ORANGE}{'='*80}")
+        print(f"{Colors.ORANGE}PROGRESS OVER TIME")
+        print(f"{Colors.ORANGE}{'='*80}\n")
+
+        # Plot header
+        print(f"{Colors.WHITE}       WPM                                 Accuracy (%)")
+
+        # Plot both graphs side by side
+        for row in range(plot_height, 0, -1):
+            wpm_threshold = (row / plot_height) * max_wpm
+            acc_threshold = (row / plot_height) * max_accuracy
+
+            # WPM side
+            line = f"{Colors.DIM}{wpm_threshold:5.1f} {Colors.WHITE}│"
+            for i, wpm in enumerate(wpms[-plot_width:]):
+                if wpm >= wpm_threshold:
+                    line += f"{Colors.GREEN}▇"
+                else:
+                    line += f"{Colors.DIM}·"
+
+            # Spacing
+            line += f"{Colors.WHITE}  "
+
+            # Accuracy side
+            line += f"{Colors.DIM}{acc_threshold:5.1f} {Colors.WHITE}│"
+            for i, acc in enumerate(accuracies[-plot_width:]):
+                if acc >= acc_threshold:
+                    line += f"{Colors.GREEN}▇"
+                else:
+                    line += f"{Colors.DIM}·"
+
+            print(line)
+
+        # Bottom axis
+        print(f"{Colors.DIM}      └{'─' * min(len(wpms), plot_width)}  {'      └'}{'─' * min(len(accuracies), plot_width)}")
+
+        print(f"\n{Colors.DIM}Showing last {min(len(wpms), plot_width)} runs")
+        print(f"{Colors.ORANGE}{'='*80}\n")
+
+    except FileNotFoundError:
+        print(f"{Colors.YELLOW}No data file found yet. Complete a test to start tracking progress.")
 
 def main():
     try:
@@ -309,6 +387,12 @@ def main():
         # Calculate and display metrics
         metrics = calculate_metrics(target_text, typed_text, elapsed_time, all_typed_chars, wrong_typed_chars)
         display_results(metrics, missed_chars)
+
+        # Save to data file
+        save_to_data_file(metrics)
+
+        # Plot progress
+        plot_terminal()
 
     except KeyboardInterrupt:
         print(f"{Colors.YELLOW}Test cancelled.")
