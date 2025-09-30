@@ -13,7 +13,6 @@ class Colors:
     GREEN = '\033[92m'
     RED = '\033[91m'
     YELLOW = '\033[93m'
-    CYAN = '\033[96m'
     BOLD = '\033[1m'
     DIM = '\033[2m'
     ORANGE = '\033[38;2;222;157;105m'  # Claude tan-orange highlight
@@ -46,9 +45,9 @@ def get_char():
 
 def display_header(problem_id):
     """Display the header with problem information."""
-    print(f"{Colors.BOLD}{Colors.CYAN}{'='*80}{Colors.RESET}")
-    print(f"{Colors.BOLD}{Colors.CYAN}TYPING SPEED TEST{Colors.RESET}")
-    print(f"{Colors.CYAN}{'='*80}{Colors.RESET}")
+    print(f"{Colors.BOLD}{Colors.ORANGE}{'='*80}{Colors.RESET}")
+    print(f"{Colors.BOLD}{Colors.ORANGE}TYPING SPEED TEST{Colors.RESET}")
+    print(f"{Colors.ORANGE}{'='*80}{Colors.RESET}")
     print(f"{Colors.YELLOW}Problem: {problem_id}{Colors.RESET}")
     print(f"{Colors.DIM}Type the code below. Press Ctrl+C to quit.{Colors.RESET}\n")
 
@@ -70,9 +69,9 @@ def display_text_with_cursor(target_text, typed_text, current_pos):
 
             if abs_pos < len(typed_text):
                 if typed_text[abs_pos] == char:
-                    output += f"{Colors.GREEN}{display_char}{Colors.RESET}"
+                    output += display_char  # Correct chars are white (no color)
                 else:
-                    output += f"{Colors.RED}{display_char}{Colors.RESET}"
+                    output += f"{Colors.RED}{typed_text[abs_pos]}{Colors.RESET}"
             elif abs_pos == current_pos:
                 # Highlight current character cell with background
                 if char == ' ':
@@ -127,9 +126,9 @@ def calculate_metrics(target_text, typed_text, elapsed_time):
 def display_results(metrics):
     """Display final results."""
     clear_screen()
-    print(f"\n{Colors.BOLD}{Colors.CYAN}{'='*80}{Colors.RESET}")
-    print(f"{Colors.BOLD}{Colors.CYAN}RESULTS{Colors.RESET}")
-    print(f"{Colors.CYAN}{'='*80}{Colors.RESET}\n")
+    print(f"\n{Colors.BOLD}{Colors.ORANGE}{'='*80}{Colors.RESET}")
+    print(f"{Colors.BOLD}{Colors.ORANGE}RESULTS{Colors.RESET}")
+    print(f"{Colors.ORANGE}{'='*80}{Colors.RESET}\n")
 
     print(f"{Colors.BOLD}Time Elapsed:{Colors.RESET} {timedelta(seconds=int(metrics['time']))}")
     print(f"{Colors.BOLD}Characters Per Minute (CPM):{Colors.RESET} {Colors.GREEN}{metrics['cpm']:.1f}{Colors.RESET}")
@@ -139,7 +138,7 @@ def display_results(metrics):
     print(f"  Total Characters: {metrics['total_chars']}")
     print(f"  {Colors.GREEN}Correct: {metrics['correct_chars']}{Colors.RESET}")
     print(f"  {Colors.RED}Incorrect: {metrics['incorrect_chars']}{Colors.RESET}")
-    print(f"\n{Colors.CYAN}{'='*80}{Colors.RESET}\n")
+    print(f"\n{Colors.ORANGE}{'='*80}{Colors.RESET}\n")
 
 def main():
     try:
